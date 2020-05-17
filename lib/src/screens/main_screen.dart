@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_deliver_app/src/admin/add_food_item.dart';
-import 'package:food_deliver_app/src/pages/favorite_page.dart';
+import 'package:food_deliver_app/src/pages/explore_page.dart';
 import 'package:food_deliver_app/src/pages/home_page.dart';
 import 'package:food_deliver_app/src/pages/order_page.dart';
 import 'package:food_deliver_app/src/pages/profile_page.dart';
@@ -50,6 +50,25 @@ class _MainScreenState extends State<MainScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           iconTheme: IconThemeData(color: Colors.black),
+          title: Text(
+            currentTabIndex == 0
+                ? "Food App"
+                : currentTabIndex == 1
+                    ? "All Food Items"
+                    : currentTabIndex == 2 ? "Orders" : "Profile",
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(Icons.notifications_none,
+                    color: Theme.of(context).primaryColor),
+                onPressed: () {}),
+            IconButton(icon: _buldShoppingCart(), onPressed: () {})
+          ],
         ),
         drawer: Drawer(
           child: Column(
@@ -100,6 +119,25 @@ class _MainScreenState extends State<MainScreen> {
         ),
         body: currentPage,
       ),
+    );
+  }
+
+  Widget _buldShoppingCart() {
+    return Stack(
+      children: <Widget>[
+        Icon(Icons.shopping_cart, color: Theme.of(context).primaryColor),
+        Positioned(
+          top: 0.0,
+          right: 0.0,
+          child: Container(
+            height: 12.0,
+            width: 12.0,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.0), color: Colors.red),
+                child: Center(child: Text("1", style: TextStyle(color: Colors.white, fontSize: 12.0)),),
+          ),
+        )
+      ],
     );
   }
 }

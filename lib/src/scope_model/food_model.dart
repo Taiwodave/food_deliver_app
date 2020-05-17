@@ -16,6 +16,10 @@ class FoodModel extends Model {
     return List.from(_foods);
   }
 
+  int get foodLength{
+    return _foods.length;
+  }
+
   Future<bool> addFood(Food food) async {
     _isLoading = true;
     notifyListeners();
@@ -73,8 +77,8 @@ class FoodModel extends Model {
             name: foodData["title"],
             description: foodData["description"],
             category: foodData["category"],
-            price: foodData["price"],
-            discount: foodData["discount"]);
+            price: double.parse(foodData["price"].toString()),
+            discount: double.parse(foodData["discount"].toString()));
 
         foodItems.add(foodItem);
       });
@@ -89,4 +93,69 @@ class FoodModel extends Model {
       return Future.value(false);
     }
   }
+
+  Future<bool> updateFood(Map<String, dynamic> foodData, String foodId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    //get the food by id
+    Food thefood = getFoodItemById(foodId);
+
+    //get theindex of the food
+    int foodIndex = _foods.indexOf(thefood);
+    try {
+      await http.put("https://fooddeliveryapp-35515.firebaseio.com/foods/${foodId}.json", body: json.encode(foodData));  
+
+      Food updatedFoodItem = Food(
+        id: foodId,
+        name: foodData["title"],
+        category: foodData["category"],
+        discount: foodData["discount"],
+        price: foodData["price"],
+        description: foodData["description"],
+      );
+
+      _foods[foodIndex] = updatedFoodItem;
+
+      _isLoading = false;
+      notifyListeners();
+      return Future.value(true);
+    } catch (error) {
+       _isLoading = false;
+      notifyListeners();
+      return Future.value(false);
+    }
+  }
+
+  Future<bool> deleteFood(String foodId) async{
+    _isLoading = true;
+    notifyListeners();
+   try {
+     final http.Response response = await http.delete("https://fooddeliveryapp-35515.firebaseio.com/foods/${foodId}.json");
+
+     //delete item from the list of food item
+     _foods.removeWhere((Food food) => food.id == foodId);
+
+
+     _isLoading = false;
+     notifyListeners();
+     return Future.value(true);
+   } catch (error) {
+     _isLoading = false;
+     notifyListeners();
+     return Future.value(false);
+   }
+  }
+
+Food getFoodItemById(String foodId){
+  Food food;
+  for(int i = 0; i < _foods.length; i++){
+    if(_foods[i].id == foodId){
+      food = _foods[i];
+      break;
+    }
+  }
+  return food;
+}
+
 }

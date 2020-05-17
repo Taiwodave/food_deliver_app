@@ -22,9 +22,7 @@ class _HomeTopInfoState extends State<HomeTopInfo> {
               Text("you like to eat", style: textStyle),
             ],
           ),
-          Icon(Icons.notifications_none,
-              size: 30.0,
-          color: Theme.of(context).primaryColor),
+          
         ],
       ),
     );
