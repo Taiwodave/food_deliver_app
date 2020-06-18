@@ -1,8 +1,12 @@
+import 'dart:io';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:food_deliver_app/src/models/food_model.dart';
 import 'package:food_deliver_app/src/scope_model/main_model.dart';
 import 'package:food_deliver_app/src/widgets/button.dart';
 import 'package:food_deliver_app/src/widgets/show_dialog.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class AddFoodItem extends StatefulWidget {
@@ -24,15 +28,25 @@ class _AddFoodItemState extends State<AddFoodItem> {
   GlobalKey<FormState> _foodItemFormKey = GlobalKey();
   GlobalKey<ScaffoldState> _scaffoldStateKey = GlobalKey();
 
+  File _image;
+
+  Future getImage() async {
+    final image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      _image = image;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: WillPopScope(
-        onWillPop: (){
+        onWillPop: () {
           Navigator.of(context).pop(false);
           return Future.value(false);
         },
-              child: Scaffold(
+        child: Scaffold(
           key: _scaffoldStateKey,
           appBar: AppBar(
             elevation: 0.0,
@@ -60,14 +74,21 @@ class _AddFoodItemState extends State<AddFoodItem> {
                 key: _foodItemFormKey,
                 child: Column(
                   children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(bottom: 15.0),
-                      height: 170.0,
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
+                    GestureDetector(
+                      onTap: getImage,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 15.0),
+                        height: 170.0,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10.0),
                           image: DecorationImage(
-                              image: AssetImage("assets/images/noimg.png"))),
+                            image: _image == null
+                                ? AssetImage("assets/images/noimg.png")
+                                : FileImage(_image),
+                          ),
+                        ),
+                      ),
                     ),
                     _buildTextFormField("Food Title"),
                     _buildTextFormField("Category"),
@@ -76,14 +97,18 @@ class _AddFoodItemState extends State<AddFoodItem> {
                     _buildTextFormField("Discount"),
                     SizedBox(height: 40.0),
                     ScopedModelDescendant(
-                      builder:
-                          (BuildContext context, Widget child, MainModel model) {
+                      builder: (BuildContext context, Widget child,
+                          MainModel model) {
                         return GestureDetector(
                           onTap: () {
                             onSubmit(model.addFood, model.updateFood);
                             if (model.isLoading) {
                               //show loading indicator
-                              showLoadingIndicator(context, widget.food != null ? "Updating food..." : "Adding Item... ");
+                              showLoadingIndicator(
+                                  context,
+                                  widget.food != null
+                                      ? "Updating food..."
+                                      : "Adding Item... ");
                             }
                           },
                           child: Button(
@@ -121,11 +146,12 @@ class _AddFoodItemState extends State<AddFoodItem> {
         final bool response = await updateFood(updatedFoodItem, widget.food.id);
         if (response) {
           Navigator.of(context).pop(); //to remove the alert dialog
-          Navigator.of(context).pop(response); // take us back to the previous page
-        } else if (!response){ 
+          Navigator.of(context)
+              .pop(response); // take us back to the previous page
+        } else if (!response) {
           Navigator.of(context).pop();
           SnackBar snackBar = SnackBar(
-            duration: Duration(seconds: 2),
+              duration: Duration(seconds: 2),
               backgroundColor: Colors.red,
               content: Text(
                 "Failed to update Food item.",
@@ -162,8 +188,6 @@ class _AddFoodItemState extends State<AddFoodItem> {
       }
     }
   }
-
-  
 
   Widget _buildTextFormField(String hint, {int maxLine = 1}) {
     return TextFormField(
